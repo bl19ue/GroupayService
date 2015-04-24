@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
-	userid : Integer,
+	userid : Number,
 	name : String,
 	email : String,
 	groups : [{type: mongoose.Schema.Types.ObjectId, ref : 'Group'}],

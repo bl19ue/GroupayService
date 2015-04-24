@@ -59,7 +59,18 @@ router.post('/user/login', function(req, res){
 /*********************************************** USER REQUEST START*************************************/
 //to request the admin of a particular group to join this group
 router.post('/user/:userid/group/:groupid/join', function(req, res){
-
+	findUser(req.params.userid).then(function(user){
+		findGroup(req.params.groupid).then(function(group){
+			var ownerid = group.admin;
+			findUser(ownerid).then(function(user){
+				user.notify.push();
+			}).fail();
+		}).fail(function(err){
+			console.log(err);
+		});	
+	}).fail(function(err){
+		console.log(err);
+	});
 });
 
 //to register out from a particular group
@@ -106,7 +117,7 @@ router.post('/user/:userid/groups', function(req, res){
 
 //to get all the groups of this user
 router.get('/user/:userid/groups', function(req, res){
-	
+
 	findUser(req.params.userid).then(function(user){
 		GroupSchema.find({groupid : {$in : user.groups}}, function(err, groups){
 			if(err){
@@ -116,7 +127,7 @@ router.get('/user/:userid/groups', function(req, res){
 				respondData(groups);
 			}
 		});
-		
+
 	}).fail(function(err){
 		console.log(err)
 	});
@@ -125,7 +136,7 @@ router.get('/user/:userid/groups', function(req, res){
 
 //to get all the details of a particular group
 router.get('/user/:userid/group/:groupid', function(req, res){
-	
+
 	UserSchema.findOne({userid : req.params.userid, 'userid.groups' : req.params.groupid}, function(err, user){
 		if(err){
 			console.log(err);
@@ -170,15 +181,15 @@ router.post('/user/:userid/group/:groupid/events', function(req, res){
 						respondData(event);
 					}
 					else{
-					
+
 					}
 				}
 			});
-			
+
 		}).fail(function(err){
 			console.log(err);
 		});
-		
+
 	}).fail(function(err){
 		console.log(err);
 	});

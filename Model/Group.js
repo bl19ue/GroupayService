@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var GroupSchema = new mongoose.Schema({
-	groupid : Integer,
+	groupid : Number,
 	name : String,
 	created_at : String,
 	admin : {type: mongoose.Schema.Types.ObjectId, ref : 'User'}, 
