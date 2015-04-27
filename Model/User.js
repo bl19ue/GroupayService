@@ -4,9 +4,10 @@ var UserSchema = new mongoose.Schema({
 	userid : Number,
 	name : String,
 	email : String,
-	groups : [{type: mongoose.Schema.Types.ObjectId, ref : 'Group'}],
-	events : [{type: mongoose.Schema.Types.ObjectId, ref : 'Event'}],
-	payments : [{type: mongoose.Schema.Types.ObjectId, ref : 'Payment'}],
+	groups : [{type: Number}],
+	events : [{type: Number}],
+	payments : [{type: Number}],
+	notifications : [{type: Number}]
 });
 
 mongoose.model('User', UserSchema, 'User');

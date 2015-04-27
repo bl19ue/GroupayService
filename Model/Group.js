@@ -4,11 +4,14 @@ var GroupSchema = new mongoose.Schema({
 	groupid : Number,
 	name : String,
 	created_at : String,
-	admin : {type: mongoose.Schema.Types.ObjectId, ref : 'User'}, 
+	admin : {type: Number}, 
 	moneypool : {type : Number, default : 0},
-	
-	users : [{type: mongoose.Schema.Types.ObjectId, ref : 'User'}],
-	events : [{type: mongoose.Schema.Types.ObjectId, ref : 'Event'}]
+	frequency : Number,
+	frequency_type : String,
+	frequency_amount : Number,
+	users : [{type: Number}],
+	events : [{type: Number}]
 });
+
 
 mongoose.model('Group', GroupSchema, 'Group');

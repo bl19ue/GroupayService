@@ -14,13 +14,12 @@ router.get('/', function(req, res) {
 });
 
 //Common response method for all the responses
-function respondData(data){
-	else{
-		res.json({
-			type: true,
-			data: data
-		});
-	}
+function respondData(res, data){
+	res.json({
+		type: true,
+		data: data
+	});
+
 }
 
 //Login, to get all the user details
@@ -32,7 +31,7 @@ router.post('/user/login', function(req, res){
 		else{
 			//if exists
 			if(user){
-				respondData(user);
+				respondData(res, user);
 			}
 			//if does not exist
 			else{
@@ -43,13 +42,14 @@ router.post('/user/login', function(req, res){
 				newUser.groups = [];
 				newUser.events = [];
 				newUser.payments = [];
+				newUser.notifications = [];
 
 				newUser.save(function(err, user){
 					if(err){
 						console.log(err);
 					}
 					else{
-						respondData(user);
+						respondData(res, user);
 					}
 				});
 			}
@@ -83,12 +83,16 @@ router.get('/user/:userid/group/:groupid/getout', function(req, res){
 /*********************************************** GROUP START*************************************/
 //To create a group with this user as the admin
 router.post('/user/:userid/groups', function(req, res){
+	
 	findUser(req.params.userid).then(function(user){
 		var newGroup = new GroupSchema();
 		newGroup.groupid = req.body.groupid;
 		newGroup.name = req.body.name;
 		newGroup.created_at = req.body.created_at;
 		newGroup.admin = req.body.userid;
+		newGroup.frequency = req.body.frequency;
+		newGroup.frequency_type = req.body.frequency_type;
+		newGroup.frequency_amount = rq.body.frequency_amount;
 		newGroup.users = [];
 		newGroup.events = [];
 		newGroup.save(function(err, group){
@@ -119,12 +123,13 @@ router.post('/user/:userid/groups', function(req, res){
 router.get('/user/:userid/groups', function(req, res){
 
 	findUser(req.params.userid).then(function(user){
+		console.log(user.groups);
 		GroupSchema.find({groupid : {$in : user.groups}}, function(err, groups){
 			if(err){
 				console.log(err)
 			}
 			else{
-				respondData(groups);
+				respondData(res, groups);
 			}
 		});
 
@@ -164,7 +169,7 @@ router.post('/user/:userid/group/:groupid/events', function(req, res){
 	findUser(req.params.userid).then(function(user){
 		findGroup(req.params.groupid).then(function(group){
 
-			EventSchema newEvent = new EventSchema();
+			var newEvent = new EventSchema();
 			newEvent.eventid = req.body.eventid;
 			newEvent.name = req.body.name;
 			newEvent.owner = user.userid;
