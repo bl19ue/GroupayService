@@ -1,16 +1,16 @@
 var mongoose = require('mongoose');
 
 var GroupSchema = new mongoose.Schema({
-	groupid : Number,
 	name : String,
+	groupid: String,
 	created_at : String,
-	admin : {type: Number}, 
+	admin : String, 
 	moneypool : {type : Number, default : 0},
 	frequency : Number,
 	frequency_type : String,
 	frequency_amount : Number,
-	users : [{type: Number}],
-	events : [{type: Number}]
+	users : [{type: String}],
+	events : [{type: String}]
 });
 
 

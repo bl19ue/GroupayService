@@ -36,7 +36,6 @@ router.post('/user/login', function(req, res){
 			//if does not exist
 			else{
 				var newUser = new UserSchema();
-				newUser.userid = req.body.userid;
 				newUser.name = req.body.name;
 				newUser.email = req.body.email;
 				newUser.groups = [];
@@ -49,7 +48,15 @@ router.post('/user/login', function(req, res){
 						console.log(err);
 					}
 					else{
-						respondData(res, user);
+						user.userid = user._id;
+						user.save(function(err, user){
+							if(err){
+								console.log(err);
+							}
+							else{
+								respondData(res, user);
+							}
+						});
 					}
 				});
 			}
@@ -86,28 +93,34 @@ router.post('/user/:userid/groups', function(req, res){
 	
 	findUser(req.params.userid).then(function(user){
 		var newGroup = new GroupSchema();
-		newGroup.groupid = req.body.groupid;
+		
 		newGroup.name = req.body.name;
 		newGroup.created_at = req.body.created_at;
 		newGroup.admin = req.body.userid;
 		newGroup.frequency = req.body.frequency;
 		newGroup.frequency_type = req.body.frequency_type;
-		newGroup.frequency_amount = rq.body.frequency_amount;
+		newGroup.frequency_amount = req.body.frequency_amount;
 		newGroup.users = [];
 		newGroup.events = [];
 		newGroup.save(function(err, group){
+
 			if(err){
+	
 				console.log(err);
 			}
 			else{
 				if(group){
-					UserSchema.update({userid : user.userid}, {$push : {groups: group.groupid}}, function(err, user){
+					console.log("gg3:" + group._id);
+					group.groupid = group._id;
+					group.save(function(err, group){});
+					UserSchema.update({userid : user.userid}, {$push : {groups: group._id}}, function(err, user){
 						if(err){
+				
 							console.log(err);
 						}
 						else{
 							if(user){
-								respondData(group);
+								respondData(res, group);
 							}
 						}
 					});
@@ -129,6 +142,7 @@ router.get('/user/:userid/groups', function(req, res){
 				console.log(err)
 			}
 			else{
+				
 				respondData(res, groups);
 			}
 		});
@@ -234,6 +248,23 @@ router.get('/user/:userid/group/:groupid/event/:eventid', function(req, res){
 	});
 });
 /*********************************************** EVENTS END*************************************/
+
+router.get('/group/:groupid/users', function(req, res){
+	var groupid = req.params.groupid;
+	findGroup(groupid).then(function(group){
+		console.log(group.users);
+		UserSchema.find({userid : {$in : group.users}}, function(err, users){
+			if(err){
+				console.log(err);
+			}
+			else{
+				respondData(res, users);
+			}
+		});
+	}).fail(function(err){
+	
+	});
+});
 
 function findUser(userid){
 	var deferred = Q.defer();
