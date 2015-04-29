@@ -36,8 +36,10 @@ router.post('/user/login', function(req, res){
 			//if does not exist
 			else{
 				var newUser = new UserSchema();
+				console.log(req.body.userid);
+				newUser.userid = req.body.userid;
 				newUser.name = req.body.name;
-				newUser.email = req.body.email;
+				newUser.URL = req.body.URL;
 				newUser.groups = [];
 				newUser.events = [];
 				newUser.payments = [];
@@ -48,7 +50,6 @@ router.post('/user/login', function(req, res){
 						console.log(err);
 					}
 					else{
-						user.userid = user._id;
 						user.save(function(err, user){
 							if(err){
 								console.log(err);
