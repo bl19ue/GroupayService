@@ -250,6 +250,31 @@ router.get('/user/:userid/group/:groupid/event/:eventid', function(req, res){
 });
 /*********************************************** EVENTS END*************************************/
 
+/*********************************************** Payment*************************************/
+
+//To get all the payments of user for a particular group
+router.get('/user/:userid/group/:groupid/payment', function(req, res){
+	findUser(req.params.userid).then(function(user){
+		findPayment().then(function(group){
+			PaymentSchema.find({paymentid : {$in : user.payments}}, function(err, payments){
+				if(err){
+					console.log(err);
+				}
+				else{
+					respondData(events);
+				}
+			});
+		}).fail(function(err){
+			console.log(err);
+		});
+	}).fail(function(err){
+		console.log(err);
+	});
+});
+/*********************************************** Payment End *************************************/
+
+/*********************************************** User Start *************************************/
+
 router.get('/group/:groupid/users', function(req, res){
 	var groupid = req.params.groupid;
 	findGroup(groupid).then(function(group){
@@ -266,6 +291,8 @@ router.get('/group/:groupid/users', function(req, res){
 	
 	});
 });
+
+/*********************************************** USER End *************************************/
 
 function findUser(userid){
 	var deferred = Q.defer();
@@ -322,6 +349,15 @@ function findEvent(eventid){
 	});
 
 	return deferred.promise;
+}
+
+function findPayment(paymentid){
+    var deferred = Q.defer();
+    PaymentSchema.findOne({paymentid: paymentid}, function(err, payment){
+        consle.log("Return Payment");
+    });
+    
+    return deferre.promise;
 }
 
 module.exports = router;
