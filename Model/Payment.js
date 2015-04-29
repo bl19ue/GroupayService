@@ -2,8 +2,8 @@ var mongoose = require('mongoose');
 
 var PaymentSchema = new mongoose.Schema({
 	paymentid : Number,
-	group : {type: mongoose.Schema.Types.ObjectId, ref : 'Group'},
-	user : {type: mongoose.Schema.Types.ObjectId, ref : 'User'},
+	group : {type : String},
+	user : {type: String},
 	amount : Number,
 	date : String
 });
