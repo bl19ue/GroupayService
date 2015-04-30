@@ -12,6 +12,7 @@ require('./Model/User');
 require('./Model/Group');
 require('./Model/Payment');
 require('./Model/Event');
+require('./Model/Notification');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

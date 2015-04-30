@@ -1,11 +1,14 @@
 var mongoose = require('mongoose');
 
-var JoinSchema = new mongoose.Schema({
-	notificationid: Number,
-	user: {type: Number},
-	admin: {type: Number},
-	group: {type: Number},
-	is_accepted: {type: Boolean, default: false}
+var NotificationSchema = new mongoose.Schema({
+	notificationid: String,
+	userid: String,
+	adminid: String,
+	groupid: String,
+	user: String,
+	group: String,
+	is_accepted: {type: Boolean, default: false},
+	is_replied: {type: Boolean, default: false}
 });
 
-mongoose.model('Join', JoinSchema, 'Join');
+mongoose.model('Notification', NotificationSchema, 'Notification');

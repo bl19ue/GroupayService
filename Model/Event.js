@@ -1,13 +1,12 @@
 var mongoose = require('mongoose');
 
 var EventSchema = new mongoose.Schema({
-	eventid : Number,
+	eventid : String,
 	name : String,
-	owner : {type: Number},
-	users : [{type: Number}],
-	money_required : Number,
-	created_at : String,
-	group : {type: Number}
+	event_cost : Number,
+	date : String,
+	group : String,
+	description: String
 });
 
 mongoose.model('Event', EventSchema, 'Event');

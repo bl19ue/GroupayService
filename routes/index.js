@@ -7,6 +7,7 @@ var UserSchema = mongoose.model('User');
 var GroupSchema = mongoose.model('Group');
 var EventSchema = mongoose.model('Event');
 var PaymentSchema = mongoose.model('Payment');
+var NotificationSchema = mongoose.model('Notification');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -97,7 +98,7 @@ router.post('/user/:userid/groups', function(req, res){
 		
 		newGroup.name = req.body.name;
 		newGroup.created_at = req.body.created_at;
-		newGroup.admin = req.body.userid;
+		newGroup.admin = req.params.userid;
 		newGroup.frequency = req.body.frequency;
 		newGroup.frequency_type = req.body.frequency_type;
 		newGroup.frequency_amount = req.body.frequency_amount;
@@ -175,6 +176,114 @@ router.get('/user/:userid/group/:groupid', function(req, res){
 		}
 	});
 });
+
+//To find all the groups that this user is not joined in
+router.get('/user/:userid/allgroup', function(req, res){
+	console.log('lol1');
+	findUser(req.params.userid).then(function(user){
+		GroupSchema.find({ $and: [ { groupid: { $nin: user.groups } }, { admin: { $nin: user.groups } } ] }, function(err, groups){
+			if(err){
+				console.log(err);
+			}
+			else{
+				respondData(res, groups);
+			}
+		});
+	}).fail(function(err){
+		console.log(err);
+	});
+
+});
+
+//A join request by the user
+router.post('/user/:userid/join/:groupid', function(req, res){
+	var userid = req.params.userid;
+	var groupid = req.params.groupid;
+	var username = req.body.name;
+	
+	findGroup(groupid).then(function(group){
+		var admin = group.admin;
+		var newNotification = new NotificationSchema();
+		newNotification.userid = userid;
+		newNotification.adminid = admin;
+		newNotification.groupid = groupid;
+		newNotification.user = username;
+		newNotification.group = group.name;
+		newNotification.is_accepted = false;
+		
+		newNotification.save(function(err, notification){
+			if(err){
+				console.log(err);
+			}
+			else{
+				notification.notificationid = notification._id;
+				notification.save(function(err, notification){
+					if(err){
+						console.log(err);
+					}
+					else{
+						respondData(res, notification);
+					}
+				});
+			}
+		});
+			
+	}).fail(function(err){
+		console.log(err);
+	});
+	
+});
+
+router.get('/admin/:adminid/requests', function(req, res){
+	
+	NotificationSchema.find({ $and: [ { admin : req.params.adminid }, { is_replied : true } ] }, function(err, notifications){
+		if(err){
+			console.log(err);
+		}
+		else{
+			respondData(res, notifications);
+		}
+	});
+});
+
+router.post('/request/:requestid', function(req, res){
+	var response = req.body.response;
+	NotificationSchema.findOne({notificationid : req.params.requestid}, function(err, notification){
+		notification.is_accepted = response;
+		notification.is_replied = true;
+		notification.save(function(err, notification){});
+		if(response){
+			findUser(notification.userid).then(function(user){
+				user.groups.push(notification.groupid);
+				user.save(function(err, user){
+					if(err){
+						console.log(err);
+					}
+					else{
+						
+					}
+				});
+			}).fail(function(err){
+				console.log(err);
+			});
+			
+			findGroup(notification.groupid).then(function(group){
+				group.users.push(notification.userid);
+				group.save(function(err, group){
+					if(err){
+						console.log(err);
+					}
+					else{
+						respondData(res, group);
+					}
+				});
+			}).fail(function(err){
+				console.log(err);
+			});
+		}
+		
+	});
+});
 /*********************************************** GROUP END*************************************/
 
 
@@ -185,23 +294,30 @@ router.post('/user/:userid/group/:groupid/events', function(req, res){
 		findGroup(req.params.groupid).then(function(group){
 
 			var newEvent = new EventSchema();
-			newEvent.eventid = req.body.eventid;
 			newEvent.name = req.body.name;
-			newEvent.owner = user.userid;
-			newEvent.users = group.users;
-			newEvent.money_required = req.body.money_required;
+			newEvent.event_cost = req.body.event_cost;
 			newEvent.created_at = req.body.created_at;
 			newEvent.group = req.body.groupid;
+			newEvent.description = req.body.description;
 			newEvent.save(function(err, event){
 				if(err){
 					console.log(err);
 				}
 				else{
 					if(event){
-						respondData(event);
+						event.eventid = event._id;
+						event.save(function(err, event){
+							if(err){
+								console.log(err);
+							}
+							else{
+								respondData(event);
+							}
+						});
+						
 					}
 					else{
-
+						//ERROR
 					}
 				}
 			});
@@ -213,7 +329,6 @@ router.post('/user/:userid/group/:groupid/events', function(req, res){
 	}).fail(function(err){
 		console.log(err);
 	});
-
 });
 
 //To get all the events inside a particular group
@@ -230,6 +345,7 @@ router.get('/user/:userid/group/:groupid/events', function(req, res){
 			});
 		}).fail(function(err){
 			console.log(err);
+			respondData(res, null);
 		});
 	}).fail(function(err){
 		console.log(err);
@@ -271,6 +387,41 @@ router.get('/user/:userid/group/:groupid/payment', function(req, res){
 		console.log(err);
 	});
 });
+
+// To pay for the selected group.
+router.post('/user/:userid/group/:groupid/pay', function(req, res){
+	findUser(req.params.userid).then(function(user){
+		findGroup(req.params.groupid).then(function(group){
+
+			var newEvent = new PaymentSchema();
+			newEvent.user = user.userid;
+			newEvent.amount = req.body.money_required;
+			newEvent.date = req.body.created_at;
+			newEvent.group = req.body.groupid;
+			newEvent.save(function(err, event){
+				if(err){
+					console.log(err);
+				}
+				else{
+					if(event){
+						respondData(event);
+					}
+					else{
+
+					}
+				}
+			});
+
+		}).fail(function(err){
+			console.log(err);
+		});
+		
+		
+
+	}).fail(function(err){
+		console.log(err);
+	});
+});
 /*********************************************** Payment End *************************************/
 
 /*********************************************** User Start *************************************/
@@ -288,7 +439,7 @@ router.get('/group/:groupid/users', function(req, res){
 			}
 		});
 	}).fail(function(err){
-	
+		console.log(err);
 	});
 });
 
