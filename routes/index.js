@@ -371,17 +371,18 @@ router.get('/user/:userid/group/:groupid/event/:eventid', function(req, res){
 //To get all the payments of user for a particular group
 router.get('/user/:userid/group/:groupid/payment', function(req, res){
 	findUser(req.params.userid).then(function(user){
-		findGroup(req.params.userid).then(function(group){
+		findGroup(req.params.groupid).then(function(group){
 			PaymentSchema.find({paymentid : {$in : user.payments}}, function(err, payments){
 				if(err){
 					console.log(err);
 				}
 				else{
-					respondData(events);
+					respondData(res, payments);
 				}
 			});
 		}).fail(function(err){
 			console.log(err);
+            		respondData(res, null);
 		});
 	}).fail(function(err){
 		console.log(err);
