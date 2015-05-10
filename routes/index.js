@@ -371,7 +371,7 @@ router.get('/user/:userid/group/:groupid/event/:eventid', function(req, res){
 //To get all the payments of user for a particular group
 router.get('/user/:userid/group/:groupid/payment', function(req, res){
 	findUser(req.params.userid).then(function(user){
-		findPayment().then(function(group){
+		findGroup(req.params.userid).then(function(group){
 			PaymentSchema.find({paymentid : {$in : user.payments}}, function(err, payments){
 				if(err){
 					console.log(err);
@@ -506,6 +506,17 @@ function findPayment(paymentid){
     var deferred = Q.defer();
     PaymentSchema.findOne({paymentid: paymentid}, function(err, payment){
         consle.log("Return Payment");
+        if(err){
+			deferred.reject(err);
+		}
+		else{
+			if(group){
+				deferred.resolve(payment);
+			}
+			else{
+				deferred.reject("No event found");
+			}
+		}
     });
     
     return deferre.promise;
