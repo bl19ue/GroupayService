@@ -158,7 +158,7 @@ router.get('/user/:userid/groups', function(req, res){
 //to get all the details of a particular group
 router.get('/user/:userid/group/:groupid', function(req, res){
 
-	UserSchema.findOne({userid : req.params.userid, 'userid.groups' : req.params.groupid}, function(err, user){
+	UserSchema.findOne({userid : req.params.userid}, function(err, user){
 		if(err){
 			console.log(err);
 		}
